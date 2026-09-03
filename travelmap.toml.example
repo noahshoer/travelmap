@@ -1,0 +1,15 @@
+# Copy this file to travelmap.toml and edit. Environment variables of the same
+# name override anything set here. Nothing is required — every key has a default.
+#
+# There is no login/passphrase: this app is meant to run on a trusted home
+# network for two people, and anyone who can reach it can view and edit it.
+
+# Display names for the two profiles.
+TRAVELMAP_ME = "Me"
+TRAVELMAP_PARTNER = "Partner"
+
+# Address to bind. Use 0.0.0.0 to reach it from other devices on your network.
+TRAVELMAP_ADDR = "0.0.0.0:8080"
+
+# Where the SQLite file lives (created on first run).
+TRAVELMAP_DB = "data/travelmap.db"

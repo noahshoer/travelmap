@@ -1,0 +1,6 @@
+target
+data
+node_modules
+e2e
+.git
+*.db

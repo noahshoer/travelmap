@@ -1,0 +1,40 @@
+# Home Assistant "App" (formerly "Add-on") manifest.
+# Reference: https://developers.home-assistant.io/docs/apps/configuration
+name: TravelMap
+description: >-
+  A shared US travel map for two people: mark which states each of you has
+  visited and drop pins for specific trips.
+version: "0.1.0"
+slug: travelmap
+url: "https://github.com/noahshoer/travelmap"
+arch:
+  - aarch64
+init: false
+startup: application
+boot: auto
+
+# Ingress-only: the app is reached exclusively through the Home Assistant UI
+# reverse proxy, so no host port is published and the container's zero-auth
+# API is never exposed directly to the LAN. See home-assistant/README.md's
+# "Access / security" section for the trade-offs this still carries.
+ingress: true
+ingress_port: 8099
+ingress_entry: /
+panel_icon: mdi:map-marker-radius
+
+# /data is always bind-mounted into the container, read-write, without
+# needing to be listed here - see the "Storage (map)" section of the
+# configuration reference. TRAVELMAP_DB is pointed at /data/travelmap.db in
+# the Dockerfile/run.sh so the SQLite file survives app updates/restarts.
+
+options:
+  me_name: "Me"
+  partner_name: "Partner"
+schema:
+  me_name: str
+  partner_name: str
+
+# Published, private image - Supervisor pulls this instead of building
+# on-device. Requires a ghcr.io registry credential (read:packages) added
+# under Settings -> Add-ons -> Add-on Store -> Add new registry.
+image: "ghcr.io/noahshoer/{arch}-travelmap"

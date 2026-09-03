@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TravelMap</title>
+  <link rel="stylesheet" href="web/styles.css">
+</head>
+<body>
+  <header>
+    <div class="titles">
+      <h1>TravelMap</h1>
+      <p id="tagline">Where <span data-name="me">Me</span> and <span data-name="partner">Partner</span> have been.</p>
+    </div>
+
+    <div class="controls">
+      <fieldset id="view-switch">
+        <legend>Show</legend>
+        <label><input type="radio" name="view" value="me"> <span data-name="me">Me</span></label>
+        <label><input type="radio" name="view" value="partner"> <span data-name="partner">Partner</span></label>
+        <label><input type="radio" name="view" value="both" checked> Both</label>
+      </fieldset>
+
+      <fieldset id="edit-switch">
+        <legend>Record for</legend>
+        <label><input type="radio" name="profile" value="me" checked> <span data-name="me">Me</span></label>
+        <label><input type="radio" name="profile" value="partner"> <span data-name="partner">Partner</span></label>
+        <label class="pin-toggle"><input type="checkbox" id="pin-mode"> Drop a pin on click</label>
+      </fieldset>
+    </div>
+
+    <ul class="legend">
+      <li><span class="swatch v-me"></span> <span data-name="me">Me</span></li>
+      <li><span class="swatch v-partner"></span> <span data-name="partner">Partner</span></li>
+      <li><span class="swatch v-both"></span> Both</li>
+      <li><span class="swatch swatch-pin"></span> Pin</li>
+    </ul>
+  </header>
+
+  <main id="map" aria-label="Map of the United States. Click a state to toggle it."></main>
+
+  <p id="status" role="status" aria-live="polite"></p>
+
+  <dialog id="pin-dialog">
+    <form method="dialog">
+      <h2>New pin</h2>
+      <label>Label
+        <input type="text" id="pin-label" maxlength="80" placeholder="e.g. Grand Canyon">
+      </label>
+      <menu>
+        <button value="cancel" type="submit">Cancel</button>
+        <button value="ok" type="submit">Add pin</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="module" src="web/app.js"></script>
+</body>
+</html>
