@@ -76,8 +76,15 @@ impl Resp {
 }
 
 /// Dispatch one request.
+///
+/// The path is normalized first (repeated slashes collapsed to one) because
+/// Home Assistant's Ingress reverse proxy can hand us paths like `//` for the
+/// app root (its entry URL is built by joining a base path with a trailing
+/// slash to `ingress_entry: /`), which would otherwise miss every route below
+/// and fall through to a 404.
 pub fn route(app: &App, req: &Req) -> Resp {
-    match (req.method, req.path) {
+    let path = normalize_path(req.path);
+    match (req.method, path.as_str()) {
         ("GET", "/") => serve_static(app, "index.html"),
         ("GET", p) if p.starts_with("/web/") => serve_static(app, &p["/web/".len()..]),
         ("GET", "/api/snapshot") => snapshot(app),
@@ -89,6 +96,28 @@ pub fn route(app: &App, req: &Req) -> Resp {
         ("OPTIONS", _) => Resp::empty(204),
         _ => Resp::text(404, "not found"),
     }
+}
+
+/// Collapse runs of consecutive `/` into one, e.g. `//` -> `/`, `//web//x` ->
+/// `/web/x`. An empty path also normalizes to `/`.
+fn normalize_path(path: &str) -> String {
+    let mut out = String::with_capacity(path.len());
+    let mut last_was_slash = false;
+    for c in path.chars() {
+        if c == '/' {
+            if !last_was_slash {
+                out.push('/');
+            }
+            last_was_slash = true;
+        } else {
+            out.push(c);
+            last_was_slash = false;
+        }
+    }
+    if out.is_empty() {
+        out.push('/');
+    }
+    out
 }
 
 // --- handlers ---------------------------------------------------------------
@@ -353,5 +382,17 @@ mod tests {
         let app = test_app();
         let r = route(&app, &req("GET", "/web/../Cargo.toml", ""));
         assert_eq!(r.status, 404);
+    }
+
+    #[test]
+    fn doubled_slashes_still_match_routes() {
+        // Regression test: Home Assistant Ingress's entry URL can hand us `//`
+        // for the app root, and (via relative-path resolution against that
+        // extra slash) doubled slashes elsewhere too.
+        let app = test_app();
+        assert_eq!(route(&app, &req("GET", "//", "")).status, 200);
+        assert_eq!(route(&app, &req("GET", "", "")).status, 200);
+        let r = route(&app, &req("GET", "//api/snapshot", ""));
+        assert_eq!(r.status, 200);
     }
 }
