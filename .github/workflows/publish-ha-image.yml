@@ -5,6 +5,11 @@ name: Build and publish Home Assistant app image
 # (ghcr.io/<owner>/{arch}-travelmap). Only aarch64 is built, matching
 # config.yaml's `arch:` list.
 #
+# Runs on GitHub's free hosted Arm64 runner (ubuntu-24.04-arm, public repos
+# only) so the build is native, not QEMU-emulated -- cross-compiling Rust
+# (rusqlite's `bundled` feature compiles SQLite's C source too) under QEMU
+# is dramatically slower and has been known to effectively hang.
+#
 # Requires this repo's Settings -> Actions -> General -> Workflow permissions
 # to be set to "Read and write permissions" so GITHUB_TOKEN can push to GHCR.
 
@@ -26,7 +31,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -35,8 +40,6 @@ jobs:
         run: |
           version=$(grep -m1 '^version:' home-assistant/travelmap/config.yaml | sed -E 's/version: *"?([^"]+)"?/\1/')
           echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - uses: docker/setup-qemu-action@v3
 
       - uses: docker/setup-buildx-action@v3
 

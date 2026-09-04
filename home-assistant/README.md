@@ -51,7 +51,10 @@ on-device. Two ways to install:
 ## Building & publishing the image
 
 `.github/workflows/publish-ha-image.yml` builds `travelmap/Dockerfile` for
-`linux/arm64` (via QEMU) and pushes it to
+`linux/arm64` natively (on GitHub's free hosted Arm64 runner,
+`ubuntu-24.04-arm` -- public repos only; cross-compiling Rust under QEMU
+emulation instead is dramatically slower and can effectively hang) and
+pushes it to
 `ghcr.io/<owner>/aarch64-travelmap`, tagged `latest`, the version read from
 `config.yaml`, and the commit SHA — matching the `{arch}-travelmap` name
 `config.yaml`'s `image:` field expects for the `aarch64` entry in its
