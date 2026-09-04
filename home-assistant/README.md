@@ -48,6 +48,26 @@ on-device. Two ways to install:
    root (this whole `home-assistant/` folder's contents would move up a
    level). Not required for option 1 above.
 
+## Building & publishing the image
+
+`.github/workflows/publish-ha-image.yml` builds `travelmap/Dockerfile` for
+`linux/arm64` (via QEMU) and pushes it to
+`ghcr.io/<owner>/aarch64-travelmap`, tagged `latest`, the version read from
+`config.yaml`, and the commit SHA — matching the `{arch}-travelmap` name
+`config.yaml`'s `image:` field expects for the `aarch64` entry in its
+`arch:` list. It runs on every push to `main` that touches `src/`, `web/`,
+`Cargo.{toml,lock}`, or `home-assistant/travelmap/`, and can also be run
+manually (Actions tab -> this workflow -> "Run workflow").
+
+One-time setup: **Settings -> Actions -> General -> Workflow permissions ->
+"Read and write permissions"**, so the workflow's `GITHUB_TOKEN` can push to
+GHCR. The first push creates the package privately, matching the "private
+image" note above.
+
+After a push lands a new image, install the update from Home Assistant's
+Supervisor as usual (or bump `version:` in `config.yaml` first if you want
+that version string to show up as an available update there).
+
 ## What the current docs actually say
 
 ("Apps" is a fairly recently renamed framework — worth confirming against
