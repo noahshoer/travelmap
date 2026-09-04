@@ -1,6 +1,6 @@
 name: Build and publish Home Assistant app image
 
-# Builds the TravelMap Home Assistant App image (home-assistant/travelmap/Dockerfile)
+# Builds the TravelMap Home Assistant App image (travelmap/Dockerfile)
 # and pushes it to GHCR under the name config.yaml's `image:` field expects
 # (ghcr.io/<owner>/{arch}-travelmap). Only aarch64 is built, matching
 # config.yaml's `arch:` list.
@@ -27,7 +27,7 @@ on:
       - "web/**"
       - "Cargo.toml"
       - "Cargo.lock"
-      - "home-assistant/travelmap/**"
+      - "travelmap/**"
       - ".github/workflows/publish-ha-image.yml"
   workflow_dispatch: {}
 
@@ -43,7 +43,7 @@ jobs:
       - id: version
         name: Read version from config.yaml
         run: |
-          version=$(grep -m1 '^version:' home-assistant/travelmap/config.yaml | sed -E 's/version: *"?([^"]+)"?/\1/')
+          version=$(grep -m1 '^version:' travelmap/config.yaml | sed -E 's/version: *"?([^"]+)"?/\1/')
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
@@ -57,7 +57,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: home-assistant/travelmap/Dockerfile
+          file: travelmap/Dockerfile
           platforms: linux/arm64
           push: true
           tags: |

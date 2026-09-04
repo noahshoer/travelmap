@@ -3,6 +3,17 @@
 All notable changes to the TravelMap Home Assistant app are documented here,
 following the [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [0.1.3] - 2026-09-04
+
+### Changed
+
+- Moved `repository.yaml` and this app's folder from `home-assistant/` up to
+  the repository root, so this repo can be added directly as a Home
+  Assistant app repository (Settings → Add-ons → Add-on Store →
+  Repositories) — Supervisor requires `repository.yaml` at the repo root,
+  and this now supports automatic update detection instead of only the
+  local-apps-folder install method.
+
 ## [0.1.2] - 2026-09-04
 
 ### Added

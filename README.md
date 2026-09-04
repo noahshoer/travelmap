@@ -157,5 +157,5 @@ imported by the browser code and nothing from `node_modules/` is served.
 ## Home Assistant
 
 TravelMap can also be installed as a Home Assistant App. See
-`home-assistant/README.md` for the manifest, Dockerfile, and publishing
+`HOME_ASSISTANT.md` for the manifest, Dockerfile, and publishing
 instructions.

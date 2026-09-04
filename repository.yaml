@@ -3,7 +3,7 @@
 #
 # To install: in Home Assistant, Settings -> Add-ons -> Add-on Store ->
 # (menu) Repositories, and add the URL of this repo (or a fork of it) with
-# this file at its root. See home-assistant/README.md for details.
+# this file at its root. See HOME_ASSISTANT.md for details.
 name: TravelMap apps
 url: "https://github.com/noahshoer/travelmap"
 maintainer: "noahshoer <CHANGE_ME>"

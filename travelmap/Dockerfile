@@ -18,9 +18,9 @@
 # Build context MUST be the project root (not this directory), since this
 # Dockerfile also needs Cargo.toml/src/web from up there, e.g. from the repo
 # root:
-#   docker build -f home-assistant/travelmap/Dockerfile -t travelmap-ha .
+#   docker build -f travelmap/Dockerfile -t travelmap-ha .
 # The official Home Assistant builder handles this via its own repo-relative
-# path conventions when publishing; see home-assistant/README.md.
+# path conventions when publishing; see HOME_ASSISTANT.md.
 
 # Declared before the first FROM so it's in scope for every stage's FROM
 # line (Docker requires this for ARGs used in FROM).
@@ -45,7 +45,7 @@ FROM ${BUILD_FROM}
 
 COPY --from=builder /usr/local/bin/travelmap /usr/bin/travelmap
 COPY web /opt/travelmap/web
-COPY home-assistant/travelmap/run.sh /
+COPY travelmap/run.sh /
 RUN chmod a+x /run.sh /usr/bin/travelmap
 
 # Persistent storage: Home Assistant always bind-mounts /data read-write into

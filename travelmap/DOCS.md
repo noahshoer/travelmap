@@ -44,7 +44,7 @@ access Home Assistant itself grants, rather than by your home network's
 physical boundary. If your Home Assistant instance is exposed beyond your
 own household (e.g. Nabu Casa remote access shared with others, or a
 public URL), anyone with that access can edit your travel data. See the
-top-level `home-assistant/README.md` for the open decision this raises.
+top-level `HOME_ASSISTANT.md` for the open decision this raises.
 
 The 🔓/🔒 button in the header locks/unlocks editing for everyone connected —
 useful for stopping accidental taps on a wall-mounted touchscreen, but it is

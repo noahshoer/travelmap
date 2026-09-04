@@ -1,32 +1,34 @@
 # TravelMap as a Home Assistant App
 
-This directory packages TravelMap as a [Home Assistant App](https://developers.home-assistant.io/docs/apps/)
+`travelmap/` packages TravelMap as a [Home Assistant App](https://developers.home-assistant.io/docs/apps/)
 (the current name for what was previously called an "Add-on" — same
 underlying mechanism: a container image plus a `config.yaml` manifest,
 installed and run by the Supervisor). It's kept separate from the existing
-`src/`/`web/` trees; the only files outside this directory touched for Home
-Assistant support are the small ingress-path fix described below.
+`src/`/`web/` trees; the only files outside it touched for Home Assistant
+support are the small ingress-path fix described below.
 
 ## Layout
 
 ```
-home-assistant/
-  repository.yaml          # marks this folder as an app repository root
-  README.md                # this file
-  travelmap/
-    config.yaml             # app manifest: name, version, arch, ingress, options schema
-    Dockerfile               # multi-stage build: Rust builder -> HA base runtime
-    run.sh                   # bashio entrypoint; reads options, execs the binary
-    README.md                # short blurb shown in the HA Add-on Store
-    DOCS.md                  # full docs shown in the app's "Documentation" tab
-    CHANGELOG.md              # Keep-a-Changelog-style history
-    .dockerignore
+repository.yaml            # marks the repo root as an app repository root
+HOME_ASSISTANT.md          # this file
+travelmap/
+  config.yaml               # app manifest: name, version, arch, ingress, options schema
+  Dockerfile                 # multi-stage build: Rust builder -> HA base runtime
+  run.sh                     # bashio entrypoint; reads options, execs the binary
+  README.md                  # short blurb shown in the HA Add-on Store
+  DOCS.md                    # full docs shown in the app's "Documentation" tab
+  CHANGELOG.md                # Keep-a-Changelog-style history
+  .dockerignore
 ```
 
 This mirrors the layout of Home Assistant's own reference repo,
 [home-assistant/apps-example](https://github.com/home-assistant/apps-example)
 (`repository.yaml` at the repo root, one subfolder per app containing that
-app's `config.yaml`).
+app's `config.yaml`) — `repository.yaml` has to sit at the repo root for
+Home Assistant's "Add repository" flow to find it at all; it previously
+lived a level deeper (`home-assistant/repository.yaml`), which only
+supported the local-apps-folder install method below.
 
 ## Installing
 
@@ -34,19 +36,23 @@ app's `config.yaml`).
 Container Registry, so the Supervisor pulls it rather than building anything
 on-device. Two ways to install:
 
-1. **Home Assistant's built-in local-apps folder** — no repository needed.
-   Copy `travelmap/config.yaml` (optionally `DOCS.md`/`README.md`/icons too)
-   into the local apps share on your Home Assistant device (exposed via the
-   Samba or SSH/File Editor add-on — the share may be named `addons` or
-   `local_apps` depending on your Supervisor version), under a folder named
-   exactly `travelmap`. Then register the registry credentials under
-   **Settings → Add-ons → Add-on Store → Add new registry** (`ghcr.io` +
-   username + a `read:packages`-scoped personal access token), and the app
-   appears under "Local Add-ons."
-2. **A proper git repository + "Add repository"** — if this project is ever
-   pushed to its own repo, `repository.yaml` needs to sit at that repo's
-   root (this whole `home-assistant/` folder's contents would move up a
-   level). Not required for option 1 above.
+1. **Add this repo as a Home Assistant app repository** — Settings → Add-ons
+   → Add-on Store → ⋮ → Repositories → add `https://github.com/noahshoer/travelmap`
+   (or a fork of it). Supervisor periodically re-fetches `config.yaml` from
+   the repo directly, so a `version:` bump shows up there as an available
+   update automatically — no manual copying needed. Then register the
+   registry credentials under **Settings → Add-ons → Add-on Store → Add new
+   registry** (`ghcr.io` + username + a `read:packages`-scoped personal
+   access token) so it can actually pull the image.
+2. **Home Assistant's built-in local-apps folder** — no repository needed,
+   but updates require manually re-copying files. Copy `travelmap/config.yaml`
+   (optionally `DOCS.md`/`README.md`/icons too) into the local apps share on
+   your Home Assistant device (exposed via the Samba or SSH/File Editor
+   add-on — the share may be named `addons` or `local_apps` depending on
+   your Supervisor version), under a folder named exactly `travelmap`.
+   Register the same registry credentials as above, and the app appears
+   under "Local Add-ons." Don't use both methods for the same install —
+   Supervisor would see two different sources for the same `slug: travelmap`.
 
 ## Building & publishing the image
 
@@ -59,8 +65,8 @@ pushes it to
 `config.yaml`, and the commit SHA — matching the `{arch}-travelmap` name
 `config.yaml`'s `image:` field expects for the `aarch64` entry in its
 `arch:` list. It runs on every push to `main` that touches `src/`, `web/`,
-`Cargo.{toml,lock}`, or `home-assistant/travelmap/`, and can also be run
-manually (Actions tab -> this workflow -> "Run workflow").
+`Cargo.{toml,lock}`, or `travelmap/`, and can also be run manually (Actions
+tab -> this workflow -> "Run workflow").
 
 One-time setup: a repo secret named `GHCR_PAT` holding a **classic** GitHub
 PAT (Settings -> Developer settings -> Personal access tokens -> Tokens
@@ -138,9 +144,9 @@ Docker/Home Assistant entirely) as well as through a real container build.
 
 Home Assistant's presentation guide recommends (not strictly requires) a
 128x128 `icon.png` and a ~250x100 `logo.png` in `travelmap/`. Not included —
-add real artwork at `home-assistant/travelmap/icon.png` / `logo.png`
-whenever available; nothing else needs to change to pick them up. Until
-then, the Supervisor's default icon is used.
+add real artwork at `travelmap/icon.png` / `logo.png` whenever available;
+nothing else needs to change to pick them up. Until then, the Supervisor's
+default icon is used.
 
 ## Options exposed
 
