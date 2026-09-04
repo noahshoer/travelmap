@@ -11,8 +11,6 @@ const MAX_SCALE = 6;
 /** Screen pixels a pointer must move before a gesture counts as a drag/pinch
  * rather than a tap — used to swallow the click that would otherwise follow. */
 const MOVE_THRESHOLD = 6;
-/** Minimum overlap (px) kept between the map and its container when panning. */
-const MIN_OVERLAP = 60;
 
 const clamp = (/** @type {number} */ v, /** @type {number} */ lo, /** @type {number} */ hi) =>
   Math.min(hi, Math.max(lo, v));
@@ -53,14 +51,19 @@ export function enablePanZoom(container, svg) {
     return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
   }
 
-  /** Nudge tx/ty so the map keeps at least MIN_OVERLAP px inside the container. */
+  /**
+   * Keep the map fully covering its own resting footprint — never let a pan
+   * or pinch reveal empty space beyond it. At `scale` 1 (not zoomed in at
+   * all) this pins tx/ty to exactly 0: the map already exactly fills that
+   * footprint, so there is nothing to pan into, only container background to
+   * expose on one side while clipping map content on the other.
+   */
   function clampPan() {
     const rect = svg.getBoundingClientRect();
-    const cRect = container.getBoundingClientRect();
-    if (rect.right < cRect.left + MIN_OVERLAP) tx += cRect.left + MIN_OVERLAP - rect.right;
-    if (rect.left > cRect.right - MIN_OVERLAP) tx += cRect.right - MIN_OVERLAP - rect.left;
-    if (rect.bottom < cRect.top + MIN_OVERLAP) ty += cRect.top + MIN_OVERLAP - rect.bottom;
-    if (rect.top > cRect.bottom - MIN_OVERLAP) ty += cRect.bottom - MIN_OVERLAP - rect.top;
+    const naturalW = rect.width / scale;
+    const naturalH = rect.height / scale;
+    tx = Math.min(0, Math.max(naturalW * (1 - scale), tx));
+    ty = Math.min(0, Math.max(naturalH * (1 - scale), ty));
   }
 
   container.addEventListener("pointerdown", (ev) => {

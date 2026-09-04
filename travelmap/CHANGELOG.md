@@ -3,6 +3,21 @@
 All notable changes to the TravelMap Home Assistant app are documented here,
 following the [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [0.1.4] - 2026-09-04
+
+### Added
+
+- `icon.png` (128x128) and `logo.png` (270x100): a pin-shaped mark split
+  blue/green/yellow the same way the map itself colors a state — blue for
+  one person, yellow for the other, green exactly where both have visited.
+
+### Fixed
+
+- Dragging the map when not zoomed in (still at its default, fully-fit
+  scale) slid it around anyway, revealing the map container's background as
+  a border on one side while clipping map content on the other. Panning is
+  now only possible once actually zoomed in past that default scale.
+
 ## [0.1.3] - 2026-09-04
 
 ### Changed

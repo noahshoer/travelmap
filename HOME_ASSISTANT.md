@@ -143,10 +143,11 @@ Docker/Home Assistant entirely) as well as through a real container build.
 ## Icon / logo
 
 Home Assistant's presentation guide recommends (not strictly requires) a
-128x128 `icon.png` and a ~250x100 `logo.png` in `travelmap/`. Not included —
-add real artwork at `travelmap/icon.png` / `logo.png` whenever available;
-nothing else needs to change to pick them up. Until then, the Supervisor's
-default icon is used.
+128x128 `icon.png` and a ~250x100 `logo.png` in `travelmap/`. Both are
+included: a pin-shaped mark split blue/green/yellow the same way the app's
+own map colors work (see below), rendered from inline SVG at exact pixel
+size (no build step -- just checked-in PNGs). Nothing else needs to change
+to pick them up.
 
 ## Options exposed
 

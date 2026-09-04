@@ -4,7 +4,7 @@ name: TravelMap
 description: >-
   A shared US travel map for two people: mark which states each of you has
   visited and drop pins for specific trips.
-version: "0.1.3"
+version: "0.1.4"
 slug: travelmap
 url: "https://github.com/noahshoer/travelmap"
 arch:
