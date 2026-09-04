@@ -1,8 +1,11 @@
 //! SQLite storage: schema plus every query the app needs.
 //!
-//! Two tables. `state_visits` has one row per (profile, state) pair a person has
-//! marked visited. `pins` holds free-form labeled markers placed by clicking the
-//! map, stored as normalized 0..1 coordinates in the SVG's viewBox.
+//! Three tables. `state_visits` has one row per (profile, state) pair a person
+//! has marked visited. `pins` holds free-form labeled markers placed by
+//! clicking the map, stored as normalized 0..1 coordinates in the SVG's
+//! viewBox. `lock_state` is a single row holding the shared "editing locked"
+//! flag (see [`is_locked`]) — not per-profile, since it's meant to guard the
+//! shared touchscreen against accidental taps, not to authenticate anyone.
 //!
 //! "Both visited" is never stored — it is [`both_visited`], derived on demand.
 
@@ -54,8 +57,30 @@ pub fn init(conn: &Connection) -> Result<()> {
              y          REAL NOT NULL,
              label      TEXT NOT NULL DEFAULT '',
              created_at TEXT NOT NULL
-         );",
+         );
+         CREATE TABLE IF NOT EXISTS lock_state (
+             id     INTEGER PRIMARY KEY CHECK (id = 0),
+             locked INTEGER NOT NULL
+         );
+         INSERT OR IGNORE INTO lock_state (id, locked) VALUES (0, 0);",
     )
+}
+
+/// Whether editing is currently locked (shared across every device/profile).
+pub fn is_locked(conn: &Connection) -> Result<bool> {
+    conn.query_row("SELECT locked FROM lock_state WHERE id = 0", [], |r| {
+        r.get::<_, i64>(0)
+    })
+    .map(|v| v != 0)
+}
+
+/// Set the shared editing-lock flag.
+pub fn set_locked(conn: &Connection, locked: bool) -> Result<()> {
+    conn.execute(
+        "UPDATE lock_state SET locked = ?1 WHERE id = 0",
+        params![locked as i64],
+    )?;
+    Ok(())
 }
 
 /// Seconds since the Unix epoch as a string. Avoids pulling in a date crate;
@@ -173,6 +198,16 @@ mod tests {
         set_visit(&c, "partner", "az").unwrap();
         // only NV was visited by both
         assert_eq!(both_visited(&c).unwrap(), vec!["nv"]);
+    }
+
+    #[test]
+    fn lock_state_defaults_unlocked_and_toggles() {
+        let c = db();
+        assert!(!is_locked(&c).unwrap());
+        set_locked(&c, true).unwrap();
+        assert!(is_locked(&c).unwrap());
+        set_locked(&c, false).unwrap();
+        assert!(!is_locked(&c).unwrap());
     }
 
     #[test]

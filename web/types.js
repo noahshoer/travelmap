@@ -28,6 +28,7 @@
  * @property {{ me: string, partner: string }} names
  * @property {{ me: string[], partner: string[] }} visits  Lowercase state codes.
  * @property {Pin[]} pins
+ * @property {boolean} locked  Whether editing is currently locked for everyone.
  */
 
 export {};

@@ -3,6 +3,17 @@
 All notable changes to the TravelMap Home Assistant app are documented here,
 following the [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [0.1.2] - 2026-09-04
+
+### Added
+
+- Pinch-to-zoom and drag-to-pan on the map — aimed at the touchscreen this
+  app typically runs on under the Ingress panel.
+- A shared 🔓/🔒 "lock editing" button. While locked, no device can toggle a
+  state or add/delete a pin until someone unlocks it again. This guards
+  against accidental taps on a shared touchscreen; it is not authentication
+  (see the "Access / networking" note in `DOCS.md`).
+
 ## [0.1.1] - 2026-09-02
 
 ### Fixed

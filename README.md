@@ -63,6 +63,13 @@ Every setting can come from an environment variable or a matching line in
   person.
 - Tick **Drop a pin on click**, then click anywhere on the map to add a labeled
   pin for the current person. Click a pin to delete it.
+- **Pinch to zoom, drag to pan.** Handy on the touchscreen this app typically
+  runs on under Home Assistant's dashboard; also works by dragging with a
+  mouse. Purely a view — it never changes what's stored.
+- **🔓/🔒 lock button** toggles a shared "editing locked" state: while locked,
+  no one can toggle states, drop pins, or delete pins (from any device), until
+  someone unlocks it again. This is a convenience to stop accidental taps on a
+  shared touchscreen, not authentication — see the note above.
 
 ## Data & backups
 
@@ -82,7 +89,7 @@ src/
 tests/
   http.rs      end-to-end check through the tiny_http server on a real port
 web/
-  index.html  styles.css  app.js  map.js  types.js  us-states.svg
+  index.html  styles.css  app.js  map.js  zoom.js  types.js  us-states.svg
 e2e/
   playwright.config.ts  tests/*.spec.ts   browser tests against a throwaway server (`npm run test:e2e`)
 package.json  tsconfig.json  .npmrc   dev-only: `npm run typecheck` (tsc --noEmit)

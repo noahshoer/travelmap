@@ -46,6 +46,11 @@ own household (e.g. Nabu Casa remote access shared with others, or a
 public URL), anyone with that access can edit your travel data. See the
 top-level `home-assistant/README.md` for the open decision this raises.
 
+The 🔓/🔒 button in the header locks/unlocks editing for everyone connected —
+useful for stopping accidental taps on a wall-mounted touchscreen, but it is
+a convenience toggle, not authentication: anyone who can reach the app can
+also unlock it.
+
 ## Updating
 
 New versions are pulled like any other Home Assistant app update. The

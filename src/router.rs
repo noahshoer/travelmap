@@ -93,6 +93,7 @@ pub fn route(app: &App, req: &Req) -> Resp {
         ("DELETE", p) if p.starts_with("/api/pins/") => {
             pins_delete(app, &p["/api/pins/".len()..])
         }
+        ("POST", "/api/lock") => lock(app, req),
         ("OPTIONS", _) => Resp::empty(204),
         _ => Resp::text(404, "not found"),
     }
@@ -127,14 +128,34 @@ fn snapshot(app: &App) -> Resp {
     let me = db::list_visits(&conn, "me").unwrap_or_default();
     let partner = db::list_visits(&conn, "partner").unwrap_or_default();
     let pins = db::list_pins(&conn).unwrap_or_default();
+    let locked = db::is_locked(&conn).unwrap_or(false);
     Resp::json(
         200,
         json!({
             "names": { "me": app.config.name_me, "partner": app.config.name_partner },
             "visits": { "me": me, "partner": partner },
             "pins": pins,
+            "locked": locked,
         }),
     )
+}
+
+#[derive(Deserialize)]
+struct LockBody {
+    locked: bool,
+}
+
+/// Set the shared editing lock. This route itself is never blocked by the
+/// lock — otherwise there would be no way to unlock.
+fn lock(app: &App, req: &Req) -> Resp {
+    let Ok(body) = serde_json::from_slice::<LockBody>(&req.body) else {
+        return Resp::text(400, "bad request body");
+    };
+    let conn = app.db.lock().unwrap();
+    match db::set_locked(&conn, body.locked) {
+        Ok(()) => Resp::empty(204),
+        Err(_) => Resp::text(500, "database error"),
+    }
 }
 
 #[derive(Deserialize)]
@@ -156,6 +177,9 @@ fn visits(app: &App, req: &Req) -> Resp {
     };
 
     let conn = app.db.lock().unwrap();
+    if db::is_locked(&conn).unwrap_or(false) {
+        return Resp::text(423, "editing is locked");
+    }
     let result = if body.visited {
         db::set_visit(&conn, &body.profile, &code)
     } else {
@@ -189,6 +213,9 @@ fn pins_create(app: &App, req: &Req) -> Resp {
     let label: String = body.label.trim().chars().take(80).collect();
 
     let conn = app.db.lock().unwrap();
+    if db::is_locked(&conn).unwrap_or(false) {
+        return Resp::text(423, "editing is locked");
+    }
     match db::add_pin(&conn, &body.profile, body.x, body.y, &label) {
         Ok(id) => Resp::json(200, json!({ "id": id })),
         Err(_) => Resp::text(500, "database error"),
@@ -200,6 +227,9 @@ fn pins_delete(app: &App, id_str: &str) -> Resp {
         return Resp::text(400, "pin id must be an integer");
     };
     let conn = app.db.lock().unwrap();
+    if db::is_locked(&conn).unwrap_or(false) {
+        return Resp::text(423, "editing is locked");
+    }
     match db::delete_pin(&conn, id) {
         Ok(()) => Resp::empty(204),
         Err(_) => Resp::text(500, "database error"),
@@ -375,6 +405,54 @@ mod tests {
             ),
         );
         assert_eq!(r.status, 422);
+    }
+
+    #[test]
+    fn lock_blocks_edits_but_not_snapshot_or_unlock() {
+        let app = test_app();
+
+        let r = route(&app, &req("POST", "/api/lock", r#"{"locked":true}"#));
+        assert_eq!(r.status, 204);
+
+        let r = route(&app, &req("GET", "/api/snapshot", ""));
+        let body: Value = serde_json::from_slice(&r.body).unwrap();
+        assert_eq!(body["locked"], true);
+
+        let r = route(
+            &app,
+            &req(
+                "POST",
+                "/api/visits",
+                r#"{"profile":"me","state_code":"ca","visited":true}"#,
+            ),
+        );
+        assert_eq!(r.status, 423);
+
+        let r = route(
+            &app,
+            &req(
+                "POST",
+                "/api/pins",
+                r#"{"profile":"me","x":0.5,"y":0.5,"label":"nope"}"#,
+            ),
+        );
+        assert_eq!(r.status, 423);
+
+        let r = route(&app, &req("DELETE", "/api/pins/1", ""));
+        assert_eq!(r.status, 423);
+
+        // unlocking restores normal behavior
+        let r = route(&app, &req("POST", "/api/lock", r#"{"locked":false}"#));
+        assert_eq!(r.status, 204);
+        let r = route(
+            &app,
+            &req(
+                "POST",
+                "/api/visits",
+                r#"{"profile":"me","state_code":"ca","visited":true}"#,
+            ),
+        );
+        assert_eq!(r.status, 204);
     }
 
     #[test]

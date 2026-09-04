@@ -105,6 +105,16 @@ button:hover {
   border-color: color-mix(in srgb, var(--fg) 40%, var(--border));
 }
 
+fieldset:disabled {
+  opacity: 0.5;
+}
+
+#lock-toggle[aria-pressed="true"] {
+  background: var(--c-pin);
+  border-color: var(--c-pin);
+  color: #fff;
+}
+
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -145,6 +155,10 @@ button:hover {
 
 #map {
   padding: 1rem 1.25rem 2rem;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #map svg {
@@ -153,6 +167,12 @@ button:hover {
   height: auto;
   max-height: 80vh;
   margin: 0 auto;
+  transform-origin: 0 0;
+}
+
+body.editing-locked #map g.state > path,
+body.editing-locked #map g.pin {
+  cursor: default;
 }
 
 #map g.state > path {

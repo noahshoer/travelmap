@@ -16,12 +16,14 @@ import {
   eventToNormalized,
   stateCode,
 } from "./map.js";
+import { enablePanZoom } from "./zoom.js";
 
 /**
  * @typedef {Object} UiState
  * @property {import("./types.js").ViewMode} view
  * @property {import("./types.js").Profile} profile
  * @property {boolean} pinMode
+ * @property {boolean} locked
  * @property {import("./types.js").Snapshot | null} snapshot
  */
 
@@ -30,6 +32,7 @@ const ui = {
   view: "both",
   profile: "me",
   pinMode: false,
+  locked: false,
   snapshot: null,
 };
 
@@ -48,6 +51,8 @@ const statusEl = $("#status");
 const pinDialog = /** @type {HTMLDialogElement} */ ($("#pin-dialog"));
 const pinLabelInput = /** @type {HTMLInputElement} */ ($("#pin-label"));
 const pinModeBox = /** @type {HTMLInputElement} */ ($("#pin-mode"));
+const editSwitch = /** @type {HTMLFieldSetElement} */ ($("#edit-switch"));
+const lockToggle = /** @type {HTMLButtonElement} */ ($("#lock-toggle"));
 
 function setStatus(/** @type {string} */ msg) {
   statusEl.textContent = msg;
@@ -74,8 +79,25 @@ async function api(method, path, body) {
 async function refresh() {
   const res = await api("GET", "api/snapshot");
   ui.snapshot = /** @type {import("./types.js").Snapshot} */ (await res.json());
+  ui.locked = ui.snapshot.locked;
   applyNames(ui.snapshot.names);
+  applyLockUi();
   render();
+}
+
+// --- editing lock -----------------------------------------------------------
+
+function applyLockUi() {
+  editSwitch.disabled = ui.locked;
+  document.body.classList.toggle("editing-locked", ui.locked);
+  lockToggle.setAttribute("aria-pressed", String(ui.locked));
+  lockToggle.textContent = ui.locked ? "🔒 Locked" : "🔓 Unlocked";
+}
+
+async function toggleLock() {
+  await api("POST", "api/lock", { locked: !ui.locked });
+  await refresh();
+  setStatus(ui.locked ? "Editing locked." : "Editing unlocked.");
 }
 
 function render() {
@@ -114,6 +136,10 @@ function askPinLabel() {
 
 async function onMapClick(/** @type {MouseEvent} */ ev) {
   if (!ui.snapshot) return;
+  if (ui.locked) {
+    setStatus("Editing is locked.");
+    return;
+  }
   const target = ev.target;
   const path = target instanceof Element ? target.closest("path") : null;
   const isState =
@@ -143,6 +169,10 @@ async function onMapClick(/** @type {MouseEvent} */ ev) {
 }
 
 async function onPinActivate(/** @type {import("./types.js").Pin} */ pin) {
+  if (ui.locked) {
+    setStatus("Editing is locked.");
+    return;
+  }
   if (!confirm(`Delete pin "${pin.label || "(no label)"}"?`)) return;
   await api("DELETE", `api/pins/${pin.id}`);
   await refresh();
@@ -173,12 +203,20 @@ function wireControls() {
     ui.pinMode = pinModeBox.checked;
     document.body.classList.toggle("pin-mode", ui.pinMode);
   });
+
+  lockToggle.addEventListener("click", () => {
+    toggleLock().catch((err) => {
+      setStatus(`That didn't work: ${err instanceof Error ? err.message : String(err)}`);
+    });
+  });
 }
 
 async function main() {
   try {
-    svg = await loadMap(/** @type {HTMLElement} */ ($("#map")));
+    const mapHost = /** @type {HTMLElement} */ ($("#map"));
+    svg = await loadMap(mapHost);
     stateEls = getStateElements(svg);
+    enablePanZoom(mapHost, svg);
     svg.addEventListener("click", (ev) => {
       onMapClick(ev).catch((err) => {
         setStatus(`That didn't work: ${err instanceof Error ? err.message : String(err)}`);

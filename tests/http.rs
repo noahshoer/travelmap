@@ -108,4 +108,22 @@ fn end_to_end_through_the_real_server() {
 
     let deleted = send(addr, "DELETE", &format!("/api/pins/{id}"), None);
     assert_eq!(deleted.status, 204);
+
+    // locking blocks further edits but not the snapshot or unlocking
+    let locked = send(addr, "POST", "/api/lock", Some(r#"{"locked":true}"#));
+    assert_eq!(locked.status, 204);
+
+    let snap = send(addr, "GET", "/api/snapshot", None);
+    assert!(snap.body.contains("\"locked\":true"));
+
+    let blocked = send(
+        addr,
+        "POST",
+        "/api/visits",
+        Some(r#"{"profile":"me","state_code":"ny","visited":true}"#),
+    );
+    assert_eq!(blocked.status, 423);
+
+    let unlocked = send(addr, "POST", "/api/lock", Some(r#"{"locked":false}"#));
+    assert_eq!(unlocked.status, 204);
 }
