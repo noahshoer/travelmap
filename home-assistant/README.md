@@ -62,10 +62,16 @@ pushes it to
 `Cargo.{toml,lock}`, or `home-assistant/travelmap/`, and can also be run
 manually (Actions tab -> this workflow -> "Run workflow").
 
-One-time setup: **Settings -> Actions -> General -> Workflow permissions ->
-"Read and write permissions"**, so the workflow's `GITHUB_TOKEN` can push to
-GHCR. The first push creates the package privately, matching the "private
-image" note above.
+One-time setup: a repo secret named `GHCR_PAT` holding a **classic** GitHub
+PAT (Settings -> Developer settings -> Personal access tokens -> Tokens
+(classic)) with the `write:packages` scope, used to log in to GHCR instead
+of the built-in `GITHUB_TOKEN`. The push a bare `GITHUB_TOKEN` makes to a
+package that doesn't exist yet is rejected with `denied: permission_denied:
+read_package` -- a new package has no repo link yet for `GITHUB_TOKEN` to
+inherit permissions from, regardless of the repo's Workflow permissions
+setting. (GHCR also doesn't yet support fine-grained PATs for package
+writes, only classic ones.) The first push creates the package privately,
+matching the "private image" note above.
 
 After a push lands a new image, install the update from Home Assistant's
 Supervisor as usual (or bump `version:` in `config.yaml` first if you want
