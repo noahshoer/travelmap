@@ -29,12 +29,17 @@
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--fg);
   background: var(--bg);
 }
 
 header {
+  flex: none;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -154,7 +159,8 @@ fieldset:disabled {
 }
 
 #map {
-  padding: 1rem 1.25rem 2rem;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   touch-action: none;
   -webkit-user-select: none;
@@ -164,9 +170,7 @@ fieldset:disabled {
 #map svg {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 80vh;
-  margin: 0 auto;
+  height: 100%;
   transform-origin: 0 0;
 }
 
@@ -230,9 +234,11 @@ body.pin-mode #map svg {
 }
 
 #status {
+  flex: none;
   min-height: 1.4em;
   margin: 0;
-  padding: 0 1.25rem 1rem;
+  padding: 0.5rem 1.25rem;
+  border-top: 1px solid var(--border);
   color: color-mix(in srgb, var(--fg) 75%, transparent);
   font-size: 0.9rem;
 }

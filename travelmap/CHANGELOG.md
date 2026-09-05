@@ -3,6 +3,20 @@
 All notable changes to the TravelMap Home Assistant app are documented here,
 following the [Keep a Changelog](https://keepachangelog.com/) format.
 
+## [0.1.5] - 2026-09-04
+
+### Fixed
+
+- The map was sized by its own aspect ratio (`height: auto`, capped at
+  `80vh`) with padding around it, rather than filling the space below the
+  header — so on most screens it fell short of the available height,
+  leaving blank page background as a visible border/block beneath it. The
+  page now uses a full-height flex layout: the header keeps its natural
+  size, and the map fills exactly the remaining space edge to edge (a
+  narrow/portrait screen still letterboxes some, since the US map's own
+  aspect ratio is much wider than a portrait screen — that's normal, not a
+  bug).
+
 ## [0.1.4] - 2026-09-04
 
 ### Added
